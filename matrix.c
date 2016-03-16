@@ -11,214 +11,259 @@ m->m[r][c]=something;
 if (m->lastcol)...
 */
 struct matrix *new_matrix(int rows, int cols) {
-double **tmp;
-int i;
-struct matrix *m;
-tmp = (double **)malloc(rows * sizeof(double *));
-for (i=0;i<rows;i++) {
-tmp[i]=(double *)malloc(cols * sizeof(double));
-}
-m=(struct matrix *)malloc(sizeof(struct matrix));
-m->m=tmp;
-m->rows = rows;
-m->cols = cols;
-m->lastcol = 0;
-return m;
+  double **tmp;
+  int i;
+  struct matrix *m;
+  tmp = (double **)malloc(rows * sizeof(double *));
+  for (i=0;i<rows;i++) {
+    tmp[i]=(double *)malloc(cols * sizeof(double));
+  }
+  m=(struct matrix *)malloc(sizeof(struct matrix));
+  m->m=tmp;
+  m->rows = rows;
+  m->cols = cols;
+  m->lastcol = 0;
+  return m;
 }
 /*-------------- void free_matrix() --------------
-Inputs: struct matrix *m
-Returns:
-1. free individual rows
-2. free array holding row pointers
-3. free actual matrix
+  Inputs: struct matrix *m
+  Returns:
+  1. free individual rows
+  2. free array holding row pointers
+  3. free actual matrix
 */
 void free_matrix(struct matrix *m) {
-int i;
-for (i=0;i<m->rows;i++) {
-free(m->m[i]);
-}
-free(m->m);
-free(m);
+  int i;
+  for (i=0;i<m->rows;i++) {
+    free(m->m[i]);
+  }
+  free(m->m);
+  free(m);
 }
 /*======== void grow_matrix() ==========
-Inputs: struct matrix *m
-int newcols
-Returns:
-Reallocates the memory for m->m such that it now has
-newcols number of collumns
-====================*/
+  Inputs: struct matrix *m
+  int newcols
+  Returns:
+  Reallocates the memory for m->m such that it now has
+  newcols number of collumns
+  ====================*/
 void grow_matrix(struct matrix *m, int newcols) {
-int i;
-for (i=0;i<m->rows;i++) {
-m->m[i] = realloc(m->m[i],newcols*sizeof(double));
-}
-m->cols = newcols;
+  int i;
+  for (i=0;i<m->rows;i++) {
+    m->m[i] = realloc(m->m[i],newcols*sizeof(double));
+  }
+  m->cols = newcols;
 }
 /*-------------- void print_matrix() --------------
-Inputs: struct matrix *m
-Returns:
-print the matrix
+  Inputs: struct matrix *m
+  Returns:
+  print the matrix
 */
 void print_matrix(struct matrix *m) {
-int i, j;
-for (i=0; i < m->rows; i++) {
-for (j=0; j < m->cols; j++)
-printf("%f ", m->m[i][j]);
-printf("\n");
-}
+  int i, j;
+  for (i=0; i < m->rows; i++) {
+    for (j=0; j < m->cols; j++)
+      printf("%f ", m->m[i][j]);
+    printf("\n");
+  }
 }
 /*-------------- void ident() --------------
-Inputs: struct matrix *m <-- assumes m is a square matrix
-Returns:
-turns m in to an identity matrix
+  Inputs: struct matrix *m <-- assumes m is a square matrix
+  Returns:
+  turns m in to an identity matrix
 */
 void ident(struct matrix *m) {
-int r, c;
-for (r=0; r < m->rows; r++) {
-for (c=0; c < m->cols; c++) {
-if ( r == c )
-m->m[r][c] = 1;
-else
-m->m[r][c] = 0;
-}
-}
+  int r, c;
+  for (r=0; r < m->rows; r++) {
+    for (c=0; c < m->cols; c++) {
+      if ( r == c )
+	m->m[r][c] = 1;
+      else
+	m->m[r][c] = 0;
+    }
+  }
 }
 /*-------------- void scalar_mult() --------------
-Inputs: double x
-struct matrix *m
-Returns:
-multiply each element of m by x
+  Inputs: double x
+  struct matrix *m
+  Returns:
+  multiply each element of m by x
 */
 void scalar_mult(double x, struct matrix *m) {
-int r, c;
-for (r=0; r < m->rows; r++)
-for (c=0; c < m->cols; c++) {
-double t = m->m[r][c];
-m->m[r][c] = t * x;
-}
+  int r, c;
+  for (r=0; r < m->rows; r++)
+    for (c=0; c < m->cols; c++) {
+      double t = m->m[r][c];
+      m->m[r][c] = t * x;
+    }
 }
 /*-------------- void matrix_mult() --------------
-Inputs: struct matrix *a
-struct matrix *b
-Returns:
-a*b -> b
+  Inputs: struct matrix *a
+  struct matrix *b
+  Returns:
+  a*b -> b
 */
 void matrix_mult(struct matrix *a, struct matrix *b) {
-int r, c;
-struct matrix * tmp;
-tmp = new_matrix(4, 1);
-for (c=0; c < b->cols; c++) {
-for (r=0; r < 4; r++)
-tmp->m[r][0] = b->m[r][c];
-for (r=0; r < 4; r++) {
-b->m[r][c] = a->m[r][0] * tmp->m[0][0] +
-a->m[r][1] * tmp->m[1][0] +
-a->m[r][2] * tmp->m[2][0] +
-a->m[r][3] * tmp->m[3][0];
-}
-}
-free_matrix(tmp);
+  int r, c;
+  struct matrix * tmp;
+  tmp = new_matrix(4, 1);
+  for (c=0; c < b->cols; c++) {
+    for (r=0; r < 4; r++)
+      tmp->m[r][0] = b->m[r][c];
+    for (r=0; r < 4; r++) {
+      b->m[r][c] = a->m[r][0] * tmp->m[0][0] +
+	a->m[r][1] * tmp->m[1][0] +
+	a->m[r][2] * tmp->m[2][0] +
+	a->m[r][3] * tmp->m[3][0];
+    }
+  }
+  free_matrix(tmp);
 }
 /*-------------- void copy_matrix() --------------
-Inputs: struct matrix *a
-struct matrix *b
-Returns:
-copy matrix a to matrix b
+  Inputs: struct matrix *a
+  struct matrix *b
+  Returns:
+  copy matrix a to matrix b
 */
 void copy_matrix(struct matrix *a, struct matrix *b) {
-int r, c;
-for (r=0; r < a->rows; r++)
-for (c=0; c < a->cols; c++)
-b->m[r][c] = a->m[r][c];
+  int r, c;
+  for (r=0; r < a->rows; r++)
+    for (c=0; c < a->cols; c++)
+      b->m[r][c] = a->m[r][c];
 }
 /*======== struct matrix * make_translate() ==========
-Inputs: int x
+  Inputs: int x
 int y
 int z
 Returns: The translation matrix created using x, y and z
 as the translation offsets.
 ====================*/
 struct matrix * make_translate(double x, double y, double z) {
-struct matrix * m = new_matrix(4, 4);
-ident(m);
-m->m[0][3] = x;
-m->m[1][3] = y;
-m->m[2][3] = z;
-return m;
+  struct matrix * m = new_matrix(4, 4);
+  ident(m);
+  m->m[0][3] = x;
+  m->m[1][3] = y;
+  m->m[2][3] = z;
+  return m;
 }
 /*======== struct matrix * make_scale() ==========
-Inputs: int x
-int y
-int z
-Returns: The translation matrix creates using x, y and z
-as the scale factors
-====================*/
+  Inputs: int x
+  int y
+  int z
+  Returns: The translation matrix creates using x, y and z
+  as the scale factors
+  ====================*/
 struct matrix * make_scale(double x, double y, double z) {
-struct matrix * m = new_matrix(4, 4);
-ident(m);
-m->m[0][0] = x;
-m->m[1][1] = y;
-m->m[2][2] = z;
-return m;
+  struct matrix * m = new_matrix(4, 4);
+  ident(m);
+  m->m[0][0] = x;
+  m->m[1][1] = y;
+  m->m[2][2] = z;
+  return m;
 }
 /*======== struct matrix * make_rotX() ==========
-Inputs: double theta
-Returns: The rotation matrix created using theta as the
-angle of rotation and X as the axis of rotation.
-====================*/
+  Inputs: double theta
+  Returns: The rotation matrix created using theta as the
+  angle of rotation and X as the axis of rotation.
+  ====================*/
 struct matrix * make_rotX(double theta) {
-struct matrix * m = new_matrix(4, 4);
-ident(m);
-m->m[1][1] = cos( theta );
-m->m[1][2] = -1 * sin( theta );
-m->m[2][1] = sin( theta );
+  struct matrix * m = new_matrix(4, 4);
+  ident(m);
+  m->m[1][1] = cos( theta );
+  m->m[1][2] = -1 * sin( theta );
+  m->m[2][1] = sin( theta );
 m->m[2][2] = cos( theta );
-return m;
+ return m;
 }
 /*======== struct matrix * make_rotY() ==========
-Inputs: double theta
-char c
-Returns: The rotation matrix created using theta as the
-angle of rotation and Y as the axis of rotation.
-====================*/
+  Inputs: double theta
+  char c
+  Returns: The rotation matrix created using theta as the
+  angle of rotation and Y as the axis of rotation.
+  ====================*/
 struct matrix * make_rotY(double theta) {
-struct matrix * m = new_matrix(4, 4);
-ident(m);
-m->m[0][0] = cos( theta );
-m->m[0][2] = -1 * sin( theta );
-m->m[2][0] = sin( theta );
-m->m[2][2] = cos( theta );
-return m;
+  struct matrix * m = new_matrix(4, 4);
+  ident(m);
+  m->m[0][0] = cos( theta );
+  m->m[0][2] = -1 * sin( theta );
+  m->m[2][0] = sin( theta );
+  m->m[2][2] = cos( theta );
+  return m;
 }
 /*======== struct matrix * make_rotZ() ==========
-Inputs: double theta
-char c
-Returns: The rotation matrix created using theta as the
-angle of rotation and Z as the axis of rotation.
-====================*/
+  Inputs: double theta
+  char c
+  Returns: The rotation matrix created using theta as the
+  angle of rotation and Z as the axis of rotation.
+  ====================*/
 struct matrix * make_rotZ(double theta) {
-struct matrix * m = new_matrix(4, 4);
-ident(m);
-m->m[0][0] = cos( theta );
-m->m[0][1] = -1 * sin( theta );
-m->m[1][0] = sin( theta );
-m->m[1][1] = cos( theta );
-return m;
+  struct matrix * m = new_matrix(4, 4);
+  ident(m);
+  m->m[0][0] = cos( theta );
+  m->m[0][1] = -1 * sin( theta );
+  m->m[1][0] = sin( theta );
+  m->m[1][1] = cos( theta );
+  return m;
 }
 /*======== struct matrix * make_bezier()) ==========
-Inputs:
-Returns: The correct 4x4 matrix that can be used
-to generate the coefiecients for a bezier curve
-====================*/
+  Inputs:
+  Returns: The correct 4x4 matrix that can be used
+  to generate the coefiecients for a bezier curve
+  ====================*/
 struct matrix * make_bezier() {
+/* [-1 3 -3 1]    [p0]  [a][ (-p0+3P1 -3P2 +P3)t^2] */
+/* [3 -6  3 0]    [p1] == [b][(3P0-6P1+3P2)t^2] */
+/* [-3 -3 0 0]    [p2]  [c][ (-3P0+3P1)t] */
+/* [1  0  0 0]    [p3]  [d][P0] */
+  struct matrix *ans = new_matrix(4,4);
+  ans->m[0][0] = -1;
+  ans->m[0][1] = 3;
+  ans->m[0][2] = -3;
+  ans->m[0][3] = 1;
+  ans->m[1][0] = 3;
+  ans->m[1][1] = -6;
+  ans->m[1][2] = 3;
+  ans->m[1][3] = 0;
+  ans->m[2][0] = -3;
+  ans->m[2][1] = -3;
+  ans->m[2][2] = 0;
+  ans->m[2][3] = 0;
+  ans->m[3][0] = 1;
+  ans->m[3][1] = 0;
+  ans->m[3][2] = 0;
+  ans->m[3][3] = 0;
+  return ans ;
 }
 /*======== struct matrix * make_hermite()) ==========
-Inputs:
+  Inputs:
 Returns:
 The correct 4x4 matrix that can be used to generate
 the coefiecients for a hermite curve
 ====================*/
 struct matrix * make_hermite() {
+/*   [2 -2 1 1 */
+/* -3 3 -2 1 */
+/* 0  0 1  0 */
+/* 1  0 0  0 */
+  struct matrix *ans = new_matrix(4,4);
+  ans->m[0][0] = 2;
+  ans->m[0][1] = -2;
+  ans->m[0][2] = 1;
+  ans->m[0][3] = 1;
+  ans->m[1][0] = -3;
+  ans->m[1][1] =3;
+  ans->m[1][2] = -2;
+  ans->m[1][3] = 1;
+  ans->m[2][0] = 0;
+  ans->m[2][1] = 0;
+  ans->m[2][2] = 1;
+  ans->m[2][3] = 0;
+  ans->m[3][0] = 1;
+  ans->m[3][1] = 0;
+  ans->m[3][2] = 0;
+  ans->m[3][3] = 0;
+  return ans ;
+
 }
 /*======== struct matrix * generate_curve_coefs() ==========
 Inputs: double p1
@@ -234,5 +279,19 @@ Type determines whether the curve is bezier or hermite
 ====================*/
 struct matrix * generate_curve_coefs( double p1, double p2,
 double p3, double p4, int type) {
+  struct matrix *B= new_matrix(4,1);
+  B->m[0][0]=p1;
+  B->m[0][1]=p2;
+  B->m[0][2]=p3;
+  B->m[0][3]=p4;
+  struct matrix *A;
+  if (type){//zero means hermite,1 is bezier
+    A =make_bezier();
+  }
+  else{
+    A = make_hermite();
+  }
+  matrix_mult(A,B);
+  return B;
 }
 
