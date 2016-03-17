@@ -133,11 +133,11 @@ void copy_matrix(struct matrix *a, struct matrix *b) {
 }
 /*======== struct matrix * make_translate() ==========
   Inputs: int x
-int y
-int z
-Returns: The translation matrix created using x, y and z
-as the translation offsets.
-====================*/
+  int y
+  int z
+  Returns: The translation matrix created using x, y and z
+  as the translation offsets.
+  ====================*/
 struct matrix * make_translate(double x, double y, double z) {
   struct matrix * m = new_matrix(4, 4);
   ident(m);
@@ -172,8 +172,8 @@ struct matrix * make_rotX(double theta) {
   m->m[1][1] = cos( theta );
   m->m[1][2] = -1 * sin( theta );
   m->m[2][1] = sin( theta );
-m->m[2][2] = cos( theta );
- return m;
+  m->m[2][2] = cos( theta );
+  return m;
 }
 /*======== struct matrix * make_rotY() ==========
   Inputs: double theta
@@ -211,10 +211,10 @@ struct matrix * make_rotZ(double theta) {
   to generate the coefiecients for a bezier curve
   ====================*/
 struct matrix * make_bezier() {
-/* [-1 3 -3 1]    [p0]  [a][ (-p0+3P1 -3P2 +P3)t^2] */
-/* [3 -6  3 0]    [p1] == [b][(3P0-6P1+3P2)t^2] */
-/* [-3 -3 0 0]    [p2]  [c][ (-3P0+3P1)t] */
-/* [1  0  0 0]    [p3]  [d][P0] */
+  /* [-1 3 -3 1]    [p0]  [a][ (-p0+3P1 -3P2 +P3)t^2] */
+  /* [3 -6  3 0]    [p1] == [b][(3P0-6P1+3P2)t^2] */
+  /* [-3 -3 0 0]    [p2]  [c][ (-3P0+3P1)t] */
+  /* [1  0  0 0]    [p3]  [d][P0] */
   struct matrix *ans = new_matrix(4,4);
   ans->m[0][0] = -1;
   ans->m[0][1] = 3;
@@ -236,15 +236,15 @@ struct matrix * make_bezier() {
 }
 /*======== struct matrix * make_hermite()) ==========
   Inputs:
-Returns:
-The correct 4x4 matrix that can be used to generate
-the coefiecients for a hermite curve
-====================*/
+  Returns:
+  The correct 4x4 matrix that can be used to generate
+  the coefiecients for a hermite curve
+  ====================*/
 struct matrix * make_hermite() {
-/*   [2 -2 1 1 */
-/* -3 3 -2 1 */
-/* 0  0 1  0 */
-/* 1  0 0  0 */
+  /*   [2 -2 1 1 */
+  /* -3 3 -2 1 */
+  /* 0  0 1  0 */
+  /* 1  0 0  0 */
   struct matrix *ans = new_matrix(4,4);
   ans->m[0][0] = 2;
   ans->m[0][1] = -2;
@@ -263,22 +263,22 @@ struct matrix * make_hermite() {
   ans->m[3][2] = 0;
   ans->m[3][3] = 0;
   return ans ;
-
+  
 }
 /*======== struct matrix * generate_curve_coefs() ==========
-Inputs: double p1
-double p2
-double p3
-double p4
-int type
-Returns:
-A matrix containing the values for a, b, c and d of the
-equation at^3 + bt^2 + ct + d for the curve defined
-by p1, p2, p3 and p4.
-Type determines whether the curve is bezier or hermite
-====================*/
+  Inputs: double p1
+  double p2
+  double p3
+  double p4
+  int type
+  Returns:
+  A matrix containing the values for a, b, c and d of the
+  equation at^3 + bt^2 + ct + d for the curve defined
+  by p1, p2, p3 and p4.
+  Type determines whether the curve is bezier or hermite
+  ====================*/
 struct matrix * generate_curve_coefs( double p1, double p2,
-double p3, double p4, int type) {
+				      double p3, double p4, int type) {
   struct matrix *B= new_matrix(4,1);
   B->m[0][0]=p1;
   B->m[0][1]=p2;
@@ -293,5 +293,11 @@ double p3, double p4, int type) {
   }
   matrix_mult(A,B);
   return B;
+  //now Matrtix B is in the form
+  /*
+  [a]
+  [b]
+  [c]
+  [d] */
 }
 
