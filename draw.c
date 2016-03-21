@@ -59,6 +59,33 @@ void add_curve( struct matrix *points,
 		double x2, double y2,
 		double x3, double y3,
 		double step, int type ) {
+
+  //0===hermite
+  //step <<1
+  struct matrix *A;//A->x  , B->y 
+  struct matrix *B;
+  //int t;
+  double t;
+  if(type){//bezier curve
+    A = generate_curve_coefs( x0, x1, x2, x3, type);
+    B = generate_curve_coefs( y0, y1, y2, y3, type);
+
+    for (t = 0; t < 1; t =t+ step) {
+      add_edge(points, A->m[0][0]*t*t*t + A->m[1][0]*t*t + A->m[2][0]*t + A->m[3][0], B->m[0][0]*t*t*t + B->m[1][0]*t*t + B->m[2][0]*t + B->m[3][0], 0, A->m[0][0]*t*t*t + A->m[1][0]*t*t + A->m[2][0]*t + A->m[3][0], B->m[0][0]*t*t*t + B->m[1][0]*t*t + B->m[2][0]*t + B->m[3][0], 0);
+    }
+    
+  }
+
+  else{//hermite curve
+    A = generate_curve_coefs( x0, x2, x1, x3,type);
+    B = generate_curve_coefs( y0, y2, y1, y3,type);
+    for(t=0;t<1 ;t =t+step){
+add_edge(points, A->m[0][0]*t*t*t + A->m[1][0]*t*t + A->m[2][0]*t + A->m[3][0], B->m[0][0]*t*t*t + B->m[1][0]*t*t + B->m[2][0]*t + B->m[3][0], 0, A->m[0][0]*t*t*t + A->m[1][0]*t*t + A->m[2][0]*t + A->m[3][0], B->m[0][0]*t*t*t + B->m[1][0]*t*t + B->m[2][0]*t + B->m[3][0], 0);
+    }
+
+    
+    
+  }
 }
 /*======== void add_point() ==========
   Inputs: struct matrix * points

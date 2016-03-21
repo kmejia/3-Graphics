@@ -57,19 +57,173 @@ humans use degrees, so the file will contain degrees for rotations,
 be sure to conver those degrees to radians (M_PI is the constant
 for PI)
 ====================*/
+
+
+/*
+I have provided sample script files for you to look at in the source code
+Here is the full list of commands:
+line: add a line to the point matrix -  takes 6 arguemnts (x0, y0, z0, x1, y1, z1)
+circle: adds a circle to the edge matrix - takes 3 parameters (cx, cy, r)
+hermite: adds a hermite curve to the edge matrix - takes 8 parameters (x0, y0, dx0, dy0, x1, y1, dx1, dy1)
+remember the curve is between points (x0, y0) and (x1, y1).
+(dx0, dy0) and (dx1, dy1) are the rates of change at the endpoints
+b: adds a bezier curve to the edge matrix - takes 8 parameters (x0, y0, x1, y1, x2, y2, x3, y3)
+This curve is drawn between (x0, y0) and (x3, y3)
+ident: set the transform matrix to the identity matrix
+scale: create a scale matrix, then multiply the transform matrix by the scale matrix -  takes 3 arguments (sx, sy, sz)
+translate: create a translation matrix, then multiply the transform matrix by the translation matrix - takes 3 arguments (tx, ty, tz)
+xrotate: create an x-axis rotation matrix, then multiply the transform matrix by the rotation matrix - takes 1 argument (theta)
+yrotate: create an y-axis rotation matrix, then multiply the transform matrix by the rotation matrix - takes 1 argument (theta)
+zrotate: create an z-axis rotation matrix, then multiply the transform matrix by the rotation matrix - takes 1 argument (theta)
+apply: apply the current transformation matrix to the edge matrix
+display: draw the lines of the point matrix to the screen, display the screen
+save: draw the lines of the point matrix to the screen/frame save the screen/frame to a file - takes 1 argument (file name)
+add the following commands to the parser
+c: adds a circle to the edge matrix - takes 3 parameters (cx, cy, r)
+h: adds a hermite curve to the edge matrix - takes 8 parameters (x0, y0, x1, y1, x2, y2, x3, y3)
+remember the curve is between points (x0, y0) and (x2, y2).
+(x1, y1) and (x3, y3) are used to calculate the rates of change at the endpoints
+b: adds a bezier curve to the edge matrix - takes 8 parameters (x0, y0, x1, y1, x2, y2, x3, y3)
+This curve is drawn between (x0, y0) and (x3, y3)
+*/
 void parse_file ( char * filename,
-struct matrix * transform,
-struct matrix * pm,
-screen s) {
-FILE *f;
-char line[256];
-clear_screen(s);
-if ( strcmp(filename, "stdin") == 0 )
-f = stdin;
-else
-f = fopen(filename, "r");
-while ( fgets(line, 255, f) != NULL ) {
-line[strlen(line)-1]='\0';
-printf(":%s:\n",line);
+		  struct matrix * transform,
+		  struct matrix * pm,
+		  screen s) {
+  FILE *f;
+  char line[256];
+  clear_screen(s);
+  if ( strcmp(filename, "stdin") == 0 )
+    f = stdin;
+  else
+    f = fopen(filename, "r");
+  while ( fgets(line, 255, f) != NULL ) {
+    line[strlen(line)-1]='\0';
+    printf(":%s:\n",line);
+    if (strcmp(line, "line") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      printf("LINE: %s\n", line);
+      
+      char * points[6];
+      int i;
+
+      points[0] = strtok(line, " ");
+      
+      for(i = 0; i < 5; i++)
+	points[i+1] = strtok(NULL, " ");
+
+      add_edge(pm, atof(points[0]), atof(points[1]), atof(points[2]), atof(points[3]), atof(points[4]), atof(points[5]));
+    }
+    else if (strcmp(line, "circle") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      char * points[3];
+      int i;
+
+      points[0] = strtok(line, " ");
+      
+      for(i = 0; i < 2; i++)
+	points[i + 1] = strtok(NULL, " ");
+
+      add_circle(pm, atof(points[0]), atof(points[1]), atof(points[2]), 1000);
+    }
+    else if (strcmp(line, "hermite") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      char * points[8];
+      int i;
+      
+      points[0] = strtok(line, " ");
+      
+      for(i = 0; i < 7; i++)
+	points[i + 1] = strtok(NULL, " ");
+
+      printf("HERMITE: %s,%s,%s,%s,%s,%s,%s,%s\n", points[0],points[1],points[2],points[3],points[4],points[5],points[6],points[7]);
+      
+      add_curve(pm, atof(points[0]), atof(points[1]), atof(points[2]), atof(points[3]), atof(points[4]), atof(points[5]), atof(points[6]), atof(points[7]), 100, HERMITE_MODE);
+    }
+    else if (strcmp(line, "bezier") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      char * points[8];
+      int i;
+
+      points[0] = strtok(line, " ");
+      
+      for(i = 0; i < 7; i++)
+	points[i + 1] = strtok(NULL, " ");
+
+      add_curve(pm, atof(points[0]), atof(points[1]), atof(points[2]), atof(points[3]), atof(points[4]), atof(points[5]), atof(points[6]), atof(points[7]), 1000, BEZIER_MODE); 
+    }
+    else if (strcmp(line, "ident") == 0) {
+      ident(transform);
+    }
+    else if (strcmp(line, "translate") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      char * sX, * sY, * sZ;
+
+      sX = strtok(line, " ");
+      sY = strtok(NULL, " ");
+      sZ = strtok(NULL, " ");
+
+      transform = make_translate(atof(sX), atof(sY), atof(sZ));
+    }
+    else if (strcmp(line, "scale") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+
+      char * sX, * sY, * sZ;
+
+      sX = strtok(line, " ");
+      sY = strtok(NULL, " ");
+      sZ = strtok(NULL, " ");
+
+      transform = make_scale(atof(sX), atof(sY), atof(sZ));
+    }
+    else if (strcmp(line, "xrotate") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+      
+      matrix_mult(make_rotX(M_PI * atof(line) / 180), transform);
+    }
+    else if (strcmp(line, "yrotate") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+      
+      matrix_mult(make_rotY(M_PI * atof(line) / 180), transform);
+    }
+    else if (strcmp(line, "zrotate") == 0) {
+      fgets(line, 255, f);
+      line[strlen(line) - 1] = '\0';
+      
+      matrix_mult(make_rotZ(M_PI * atof(line) / 180), transform);
+    }
+    else if (strcmp(line, "apply") == 0) {
+      matrix_mult(transform, pm);
+    }
+    else if (strcmp(line, "display") == 0) {
+      color c;
+      c.red = 50;
+      c.green = 100;
+      c.blue = MAX_COLOR;
+
+      draw_lines(pm, s, c);
+      display(s);
+      clear_screen(s);
+    }
+    else if (strcmp(line, "save") == 0) {
+      save_extension(s, "kmejia.png");
+    }
+    else if (strcmp(line, "quit") == 0) {
+      exit(0);
+    }
+  }
 }
-}
+
