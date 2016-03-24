@@ -1,2 +1,17 @@
 circle
-200 200 100 
+240 269 300
+circle
+175 325 100
+circle
+325 325 80
+circle
+175 325 70
+circle
+175 325 10
+circle
+175 325 30
+circle
+315 328 20
+display
+save
+quit
